@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createStore, combineReducers } from 'redux';
+import { createStore } from 'redux';
 import './index.css';
 import expect, { createSpy, spyOn, isSpy } from 'expect';
 var deepFreeze = require('deep-freeze');
@@ -43,6 +43,15 @@ const visibilityFilter = (state = 'SHOW_ALL', action) => {
 		default:
 			return state;
 	}
+};
+
+const combineReducers = reducers => {
+	return (state = {}, action) => {
+		return Object.keys(reducers).reduce((nextState, key) => {
+			nextState[key] = reducers[key](state[key], action);
+			return nextState;
+		}, {});
+	};
 };
 
 const todoApp = combineReducers({
