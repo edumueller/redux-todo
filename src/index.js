@@ -1,6 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { createStore, combineReducers } from 'redux';
+import { Provider } from 'react-redux';
 import './index.css';
 import expect from 'expect';
 var deepFreeze = require('deep-freeze');
@@ -107,8 +109,6 @@ const testToggleTodo = () => {
 	expect(todos(stateBefore, action)).toEqual(stateAfter);
 };
 
-const store = createStore(todoApp);
-
 const { Component } = React;
 
 const Link = ({ active, children, onClick }) => {
@@ -130,6 +130,7 @@ const Link = ({ active, children, onClick }) => {
 
 class FilterLink extends Component {
 	componentDidMount() {
+		const { store } = this.context;
 		this.unsubscribe = store.subscribe(() => this.forceUpdate());
 	}
 
@@ -139,6 +140,7 @@ class FilterLink extends Component {
 
 	render() {
 		const props = this.props;
+		const { store } = this.context;
 		const state = store.getState();
 
 		return (
@@ -156,11 +158,16 @@ class FilterLink extends Component {
 		);
 	}
 }
+FilterLink.contextTypes = {
+	store: PropTypes.object
+};
 
 const Footer = () => (
 	<p>
-		Show: <FilterLink filter="SHOW_ALL">All</FilterLink>,{' '}
-		<FilterLink filter="SHOW_ACTIVE">Active</FilterLink>,{' '}
+		Show: <FilterLink filter="SHOW_ALL">All</FilterLink>
+		{', '}
+		<FilterLink filter="SHOW_ACTIVE">Active</FilterLink>
+		{', '}
 		<FilterLink filter="SHOW_COMPLETED">Completed</FilterLink>
 	</p>
 );
@@ -184,7 +191,7 @@ const TodoList = ({ todos, onTodoClick }) => (
 	</ul>
 );
 
-const AddTodo = () => {
+const AddTodo = (props, { store }) => {
 	let input;
 
 	return (
@@ -209,6 +216,9 @@ const AddTodo = () => {
 		</div>
 	);
 };
+AddTodo.contextTypes = {
+	store: PropTypes.object
+};
 
 const getVisibleTodos = (todos, filter) => {
 	switch (filter) {
@@ -221,8 +231,16 @@ const getVisibleTodos = (todos, filter) => {
 	}
 };
 
+// const mapStateToProps = state => {
+// 	return {
+// 		todos: getVisibleTodos(state.todos, state.visibilityFilter)
+// 	};
+// };
+// const mapDispatchToProps = (dispatch)
+
 class VisibleTodoList extends Component {
 	componentDidMount() {
+		const { store } = this.context;
 		this.unsubscribe = store.subscribe(() => this.forceUpdate());
 	}
 
@@ -232,6 +250,7 @@ class VisibleTodoList extends Component {
 
 	render() {
 		const props = this.props;
+		const { store } = this.context;
 		const state = store.getState();
 
 		return (
@@ -247,6 +266,9 @@ class VisibleTodoList extends Component {
 		);
 	}
 }
+VisibleTodoList.contextTypes = {
+	store: PropTypes.object
+};
 
 let nextTodoId = 0;
 const TodoApp = () => (
@@ -257,50 +279,27 @@ const TodoApp = () => (
 	</div>
 );
 
-const render = () => {
-	ReactDOM.render(
-		<TodoApp {...store.getState()} />,
-		document.getElementById('root')
-	);
+// class Provider extends Component {
+// 	getChildContext() {
+// 		return {
+// 			store: this.props.store
+// 		};
+// 	}
+// 	render() {
+// 		return this.props.children;
+// 	}
+// }
+
+Provider.childContextTypes = {
+	store: PropTypes.object
 };
 
-store.subscribe(render);
-render();
-
-console.log('Initial State:');
-console.log(store.getState());
-console.log('--------------');
-
-console.log('Dispatching ADD_TODO.');
-store.dispatch({
-	type: 'ADD_TODO',
-	id: 0,
-	text: 'Learn Redux'
-});
-nextTodoId++;
-console.log('Current State:');
-console.log(store.getState());
-console.log('--------------');
-
-console.log('Dispatching TOGGLE_TODO.');
-store.dispatch({
-	type: 'TOGGLE_TODO',
-	id: 0
-});
-
-console.log('Current State:');
-console.log(store.getState());
-console.log('--------------');
-
-console.log('Dispatching SET_VISIBILITY_FILTER');
-store.dispatch({
-	type: 'SET_VISIBILITY_FILTER',
-	filter: 'SHOW_ALL'
-});
-
-console.log('Current State:');
-console.log(store.getState());
-console.log('--------------');
+ReactDOM.render(
+	<Provider store={createStore(todoApp)}>
+		<TodoApp />
+	</Provider>,
+	document.getElementById('root')
+);
 
 testAddTodo();
 testToggleTodo();
