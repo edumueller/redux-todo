@@ -134,7 +134,22 @@ class TodoApp extends Component {
 					Add Todo
 				</button>
 				<ul>
-					{this.props.todos.map(todo => <li key={todo.id}>{todo.text}</li>)}
+					{this.props.todos.map(todo => (
+						<li
+							key={todo.id}
+							onClick={() => {
+								store.dispatch({
+									type: 'TOGGLE_TODO',
+									id: todo.id
+								});
+							}}
+							style={{
+								textDecoration: todo.completed ? 'line-through' : 'none'
+							}}
+						>
+							{todo.text}
+						</li>
+					))}
 				</ul>
 			</div>
 		);
@@ -161,7 +176,7 @@ store.dispatch({
 	id: 0,
 	text: 'Learn Redux'
 });
-
+nextTodoId++;
 console.log('Current State:');
 console.log(store.getState());
 console.log('--------------');
