@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { createStore, combineReducers } from 'redux';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import './index.css';
 import expect from 'expect';
 var deepFreeze = require('deep-freeze');
@@ -191,7 +191,7 @@ const TodoList = ({ todos, onTodoClick }) => (
 	</ul>
 );
 
-const AddTodo = (props, { store }) => {
+let AddTodo = ({ dispatch }) => {
 	let input;
 
 	return (
@@ -203,7 +203,7 @@ const AddTodo = (props, { store }) => {
 			/>
 			<button
 				onClick={() => {
-					store.dispatch({
+					dispatch({
 						type: 'ADD_TODO',
 						id: nextTodoId++,
 						text: input.value
@@ -216,9 +216,7 @@ const AddTodo = (props, { store }) => {
 		</div>
 	);
 };
-AddTodo.contextTypes = {
-	store: PropTypes.object
-};
+AddTodo = connect()(AddTodo); // Does not subscribe to the store, only injects the dispatch function in AddTodo
 
 const getVisibleTodos = (todos, filter) => {
 	switch (filter) {
@@ -231,44 +229,24 @@ const getVisibleTodos = (todos, filter) => {
 	}
 };
 
-// const mapStateToProps = state => {
-// 	return {
-// 		todos: getVisibleTodos(state.todos, state.visibilityFilter)
-// 	};
-// };
-// const mapDispatchToProps = (dispatch)
-
-class VisibleTodoList extends Component {
-	componentDidMount() {
-		const { store } = this.context;
-		this.unsubscribe = store.subscribe(() => this.forceUpdate());
-	}
-
-	componentWillUnmount() {
-		this.unsubscribe();
-	}
-
-	render() {
-		const props = this.props;
-		const { store } = this.context;
-		const state = store.getState();
-
-		return (
-			<TodoList
-				todos={getVisibleTodos(state.todos, state.visibilityFilter)}
-				onTodoClick={id =>
-					store.dispatch({
-						type: 'TOGGLE_TODO',
-						id
-					})
-				}
-			/>
-		);
-	}
-}
-VisibleTodoList.contextTypes = {
-	store: PropTypes.object
+const mapStateToTodoListProps = state => {
+	return {
+		todos: getVisibleTodos(state.todos, state.visibilityFilter)
+	};
 };
+const mapDispatchToTodoListProps = dispatch => {
+	return {
+		onTodoClick: id =>
+			dispatch({
+				type: 'TOGGLE_TODO',
+				id
+			})
+	};
+};
+const VisibleTodoList = connect(
+	mapStateToTodoListProps,
+	mapDispatchToTodoListProps
+)(TodoList);
 
 let nextTodoId = 0;
 const TodoApp = () => (
@@ -278,21 +256,6 @@ const TodoApp = () => (
 		<Footer />
 	</div>
 );
-
-// class Provider extends Component {
-// 	getChildContext() {
-// 		return {
-// 			store: this.props.store
-// 		};
-// 	}
-// 	render() {
-// 		return this.props.children;
-// 	}
-// }
-
-Provider.childContextTypes = {
-	store: PropTypes.object
-};
 
 ReactDOM.render(
 	<Provider store={createStore(todoApp)}>
