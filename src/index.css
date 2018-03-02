@@ -8,3 +8,7 @@ body {
   margin: auto;
   width: 800px;
 }
+
+.display-filters {
+  margin-left: 10px;
+}
