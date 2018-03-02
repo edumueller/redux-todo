@@ -2,13 +2,12 @@ body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  height: 100%;
+  width: 100%;
 }
 
 #root {
-  margin: auto;
+  margin: 30% auto auto 30%;
   width: 800px;
-}
-
-.display-filters {
-  margin-left: 10px;
+  height: 300px;
 }
