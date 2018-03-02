@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createStore } from 'redux';
+import { createStore, combineReducers } from 'redux';
 import './index.css';
 import expect, { createSpy, spyOn, isSpy } from 'expect';
 var deepFreeze = require('deep-freeze');
@@ -45,12 +45,10 @@ const visibilityFilter = (state = 'SHOW_ALL', action) => {
 	}
 };
 
-const todoApp = (state = {}, action) => {
-	return {
-		todos: todos(state.todos, action),
-		visibilityFilter: visibilityFilter(state.visibilityFilter, action)
-	};
-};
+const todoApp = combineReducers({
+	todos,
+	visibilityFilter
+});
 
 const testAddTodo = () => {
 	const stateBefore = [];
